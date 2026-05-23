@@ -1,0 +1,102 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Create required folders
+        run: mkdir -p data/raw data/processed db models reports mlruns
+
+      - name: Create sample clean data
+        run: |
+          python - <<'PY'
+          import pandas as pd
+          from pathlib import Path
+
+          Path("data/processed").mkdir(parents=True, exist_ok=True)
+
+          rows = []
+          for i in range(30):
+              rows.append({
+                  "age": 30 + i % 40,
+                  "sex": i % 2,
+                  "bmi": 20 + i % 10,
+                  "sp": 110 + i % 40,
+                  "bp": 70 + i % 20,
+                  "hba1c": 6.5 + (i % 6) * 0.5,
+                  "fps": 90 + i % 80,
+                  "pps": 130 + i % 120,
+                  "family_h": i % 2,
+                  "onset_age": 25 + i % 30,
+                  "dia_life": 1 + i % 15,
+                  "smoking": i % 3,
+                  "phy_act": i % 2,
+                  "med_use": i % 2,
+                  "med_adh": i % 3,
+                  "nep": i % 2,
+                  "neu": (i + 1) % 2,
+                  "ret": i % 2,
+                  "cv": (i // 2) % 2,
+                  "per_vas": 1 if i % 15 == 0 else 0
+              })
+
+          pd.DataFrame(rows).to_csv("data/processed/clean_data.csv", index=False)
+          print("sample data ready")
+          PY
+
+      - name: Run tests
+        run: pytest -q
+
+      - name: Import FastAPI app
+        run: python -c "from src.api.main import app; print('fastapi import ok')"
+
+      - name: Import Django settings
+        run: python -c "import os; os.environ.setdefault('DJANGO_SETTINGS_MODULE','dashboard.config.settings'); import django; django.setup(); print('django import ok')"
+
+      - name: Check training modules
+        run: python -c "from src.features.build_features import get_cols; from src.train.metrics import calc_metrics; print('train modules ok')"
+
+      - name: Check database modules
+        run: python -c "from src.db.schema import init_db; print('db import ok')"
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Check Dockerfile exists
+        run: test -f Dockerfile
+
+      - name: Check docker-compose exists
+        run: test -f docker-compose.yml
+
+      - name: Docker compose config
+        run: docker compose config
+
+      - name: Build app image
+        run: docker build -t diabetes-complication-ai:ci .

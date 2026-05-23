@@ -1,0 +1,75 @@
+{% extends "app/base.html" %}
+{% block content %}
+<h1>Chi tiết bệnh nhân</h1>
+{% if message %}<p>{{ message }}</p>{% endif %}
+{% if patient %}
+<div class="card">
+  <h2>Thông tin bệnh nhân</h2>
+  <p>ma_benh_nhan: {{ patient.ma_benh_nhan }}</p>
+  <p>ten: {{ patient.ten }}</p>
+  <p>tuoi: {{ patient.tuoi }}</p>
+  <p>gioi_tinh: {{ patient.gioi_tinh }}</p>
+</div>
+
+<div class="card">
+  <h2>Hồ sơ lâm sàng mới nhất</h2>
+  {% if clinical %}
+    <p>bmi: {{ clinical.bmi }}</p>
+    <p>sp: {{ clinical.sp }}</p>
+    <p>bp: {{ clinical.bp }}</p>
+    <p>hba1c: {{ clinical.hba1c }}</p>
+    <p>fps: {{ clinical.fps }}</p>
+    <p>pps: {{ clinical.pps }}</p>
+    <p>family_history: {{ clinical.family_history }}</p>
+    <p>onset_age: {{ clinical.onset_age }}</p>
+    <p>dia_life: {{ clinical.dia_life }}</p>
+    <p>smoking: {{ clinical.smoking }}</p>
+    <p>phy_act: {{ clinical.phy_act }}</p>
+    <p>med_use: {{ clinical.med_use }}</p>
+    <p>med_adh: {{ clinical.med_adh }}</p>
+  {% else %}
+    <p>Chưa có hồ sơ lâm sàng.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Kết quả dự đoán mới nhất</h2>
+  {% if prediction %}
+    <p>ma_ket_qua: <a href="/predictions/{{ prediction.ma_ket_qua }}/">{{ prediction.ma_ket_qua }}</a></p>
+    <p>muc_nguy_co_tong: {{ prediction.muc_nguy_co_tong }}</p>
+    <p>thoi_gian_du_doan: {{ prediction.thoi_gian_du_doan }}</p>
+  {% else %}
+    <p>Chưa có dữ liệu dự đoán.</p>
+  {% endif %}
+</div>
+
+<h2>Risk scores</h2>
+{% if scores %}
+<table>
+  <tr><th>biến chứng</th><th>risk_score</th><th>risk_label</th><th>risk_level</th></tr>
+  {% for s in scores %}
+    <tr>
+      <td>{{ s.ten_bien_chung }}: {% if s.ten_bien_chung == "nep" %}biến chứng thận{% elif s.ten_bien_chung == "neu" %}biến chứng thần kinh{% elif s.ten_bien_chung == "ret" %}biến chứng võng mạc{% elif s.ten_bien_chung == "cv" %}biến chứng tim mạch{% elif s.ten_bien_chung == "per_vas" %}biến chứng mạch máu ngoại biên{% endif %}</td>
+      <td>{{ s.risk_score }}</td>
+      <td>{{ s.risk_label }}</td>
+      <td>{{ s.risk_level }}</td>
+    </tr>
+  {% endfor %}
+</table>
+{% else %}
+<p>Chưa có risk score.</p>
+{% endif %}
+
+<h2>Lịch sử dự đoán</h2>
+{% if history %}
+<table>
+  <tr><th>ma_ket_qua</th><th>muc_nguy_co_tong</th><th>thoi_gian_du_doan</th></tr>
+  {% for h in history %}
+    <tr><td><a href="/predictions/{{ h.ma_ket_qua }}/">{{ h.ma_ket_qua }}</a></td><td>{{ h.muc_nguy_co_tong }}</td><td>{{ h.thoi_gian_du_doan }}</td></tr>
+  {% endfor %}
+</table>
+{% else %}
+<p>Chưa có lịch sử dự đoán.</p>
+{% endif %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,115 @@
+version: "3.9"
+
+services:
+  fastapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: diabetes_fastapi
+    command: uvicorn src.api.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    environment:
+      PYTHONPATH: /app
+      APP_DB_PATH: /app/db/app.duckdb
+      MODEL_PATH: /app/models/best_model.pkl
+      META_PATH: /app/models/meta.json
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+    volumes:
+      - ./data:/app/data
+      - ./db:/app/db
+      - ./models:/app/models
+      - ./reports:/app/reports
+      - ./mlruns:/app/mlruns
+    depends_on:
+      - mlflow
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - diabetes_net
+
+  django:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: diabetes_django
+    command: python dashboard/manage.py runserver 0.0.0.0:8001
+    ports:
+      - "8001:8001"
+    environment:
+      PYTHONPATH: /app
+      APP_DB_PATH: /app/db/app.duckdb
+      DJANGO_SETTINGS_MODULE: dashboard.config.settings
+      MLFLOW_URL: http://localhost:5000
+      PROMETHEUS_URL: http://localhost:9090
+      GRAFANA_URL: http://localhost:3000
+    volumes:
+      - ./data:/app/data
+      - ./db:/app/db
+      - ./models:/app/models
+      - ./reports:/app/reports
+      - ./mlruns:/app/mlruns
+    depends_on:
+      - fastapi
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8001/login/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - diabetes_net
+
+  mlflow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: diabetes_mlflow
+    command: mlflow ui --host 0.0.0.0 --port 5000 --backend-store-uri /app/mlruns
+    ports:
+      - "5000:5000"
+    environment:
+      PYTHONPATH: /app
+    volumes:
+      - ./mlruns:/app/mlruns
+      - ./models:/app/models
+      - ./reports:/app/reports
+    networks:
+      - diabetes_net
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: diabetes_prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - fastapi
+    networks:
+      - diabetes_net
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: diabetes_grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning
+      - ./docker/grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - prometheus
+    networks:
+      - diabetes_net
+
+networks:
+  diabetes_net:
+    name: diabetes_net

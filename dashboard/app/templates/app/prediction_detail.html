@@ -1,0 +1,30 @@
+{% extends "app/base.html" %}
+{% block content %}
+<h1>Chi tiết dự đoán</h1>
+{% if message %}<p>{{ message }}</p>{% endif %}
+{% if prediction %}
+<div class="card">
+  <p>ma_ket_qua: {{ prediction.ma_ket_qua }}</p>
+  <p>ma_benh_nhan: {{ prediction.ma_benh_nhan }}</p>
+  <p>ma_model: {{ prediction.ma_model }}</p>
+  <p>muc_nguy_co_tong: {{ prediction.muc_nguy_co_tong }}</p>
+  <p>thoi_gian_du_doan: {{ prediction.thoi_gian_du_doan }}</p>
+  <p><a href="/patients/{{ prediction.ma_benh_nhan }}/">Quay lại bệnh nhân</a></p>
+</div>
+{% if scores %}
+<table>
+  <tr><th>biến chứng</th><th>risk_score</th><th>risk_label</th><th>risk_level</th></tr>
+  {% for s in scores %}
+    <tr>
+      <td>{{ s.ten_bien_chung }}: {% if s.ten_bien_chung == "nep" %}biến chứng thận{% elif s.ten_bien_chung == "neu" %}biến chứng thần kinh{% elif s.ten_bien_chung == "ret" %}biến chứng võng mạc{% elif s.ten_bien_chung == "cv" %}biến chứng tim mạch{% elif s.ten_bien_chung == "per_vas" %}biến chứng mạch máu ngoại biên{% endif %}</td>
+      <td>{{ s.risk_score }}</td>
+      <td>{{ s.risk_label }}</td>
+      <td>{{ s.risk_level }}</td>
+    </tr>
+  {% endfor %}
+</table>
+{% else %}
+<p>Chưa có risk score.</p>
+{% endif %}
+{% endif %}
+{% endblock %}

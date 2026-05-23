@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>Diabetes Dashboard</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; color: #1f2937; background: #f3f4f6; }
+    header { background: #0f766e; color: white; padding: 14px 24px; }
+    nav { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 10px; }
+    nav a, header a { color: white; text-decoration: none; font-weight: 600; }
+    main { padding: 24px; max-width: 1180px; margin: 0 auto; }
+    .bar { display: flex; justify-content: space-between; gap: 16px; align-items: center; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+    .card { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; }
+    table { width: 100%; border-collapse: collapse; background: white; }
+    th, td { padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: left; vertical-align: top; }
+    th { background: #f9fafb; }
+    a { color: #0f766e; }
+    input, select, button { padding: 9px; border: 1px solid #cbd5e1; border-radius: 6px; }
+    button { background: #0f766e; color: white; cursor: pointer; }
+    .muted { color: #6b7280; }
+    .error { color: #b91c1c; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="bar">
+      <strong>AI Extend Module</strong>
+      <div>
+        {% if user.is_authenticated %}
+          Xin chào, {{ user.username }} · <a href="/logout/">Đăng xuất</a>
+        {% else %}
+          <a href="/login/">Đăng nhập</a>
+        {% endif %}
+      </div>
+    </div>
+    <nav>
+      <a href="/">Dashboard</a>
+      <a href="/patients/">Bệnh nhân</a>
+      <a href="/alerts/">Cảnh báo</a>
+      <a href="{{ mlflow_url|default:'http://localhost:5000' }}" target="_blank">MLflow</a>
+      <a href="{{ prometheus_url|default:'http://localhost:9090' }}" target="_blank">Prometheus</a>
+      <a href="{{ grafana_url|default:'http://localhost:3000' }}" target="_blank">Grafana</a>
+    </nav>
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

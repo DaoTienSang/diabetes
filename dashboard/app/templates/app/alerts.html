@@ -1,0 +1,31 @@
+{% extends "app/base.html" %}
+{% block content %}
+<h1>Danh sách cảnh báo biến chứng</h1>
+<form method="get">
+  <select name="level">
+    <option value="">all</option>
+    <option value="high" {% if level == "high" %}selected{% endif %}>high</option>
+    <option value="medium" {% if level == "medium" %}selected{% endif %}>medium</option>
+    <option value="low" {% if level == "low" %}selected{% endif %}>low</option>
+  </select>
+  <button type="submit">Lọc</button>
+</form>
+{% if alerts %}
+<table>
+  <tr><th>ma_canh_bao</th><th>ma_benh_nhan</th><th>ma_ket_qua</th><th>muc_canh_bao</th><th>noi_dung</th><th>trang_thai</th><th>thoi_gian_tao</th></tr>
+  {% for a in alerts %}
+    <tr>
+      <td>{{ a.ma_canh_bao }}</td>
+      <td><a href="/patients/{{ a.ma_benh_nhan }}/">{{ a.ma_benh_nhan }}</a></td>
+      <td><a href="/predictions/{{ a.ma_ket_qua }}/">{{ a.ma_ket_qua }}</a></td>
+      <td>{{ a.muc_canh_bao }}</td>
+      <td>{{ a.noi_dung }}</td>
+      <td>{{ a.trang_thai }}</td>
+      <td>{{ a.thoi_gian_tao }}</td>
+    </tr>
+  {% endfor %}
+</table>
+{% else %}
+<p>Chưa có cảnh báo.</p>
+{% endif %}
+{% endblock %}

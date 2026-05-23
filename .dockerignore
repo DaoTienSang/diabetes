@@ -1,0 +1,15 @@
+__pycache__/
+.pytest_cache/
+.git/
+.venv/
+env/
+venv/
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+.ipynb_checkpoints/
+mlruns/
+db/*.duckdb
+models/*.pkl
+data/raw/*.csv

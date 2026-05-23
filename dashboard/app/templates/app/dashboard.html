@@ -1,0 +1,40 @@
+{% extends "app/base.html" %}
+{% block content %}
+<h1>Dashboard dự đoán biến chứng tiểu đường</h1>
+<div class="grid">
+  <div class="card"><h3>Tổng số bệnh nhân</h3><strong>{{ counts.patients }}</strong></div>
+  <div class="card"><h3>Tổng số dự đoán</h3><strong>{{ counts.predictions }}</strong></div>
+  <div class="card"><h3>Cảnh báo high</h3><strong>{{ counts.high_alerts }}</strong></div>
+  <div class="card"><h3>Cảnh báo medium</h3><strong>{{ counts.medium_alerts }}</strong></div>
+</div>
+
+<h2>Model production hiện tại</h2>
+<div class="card">
+  {% if latest_model %}
+    <p>model_name: {{ latest_model.model_name }}</p>
+    <p>version: {{ latest_model.version }}</p>
+    <p>stage: {{ latest_model.stage }}</p>
+    <p>f1_micro: {{ latest_model.f1_micro }}</p>
+    <p>recall_macro: {{ latest_model.recall_macro }}</p>
+  {% else %}
+    <p>Chưa có dữ liệu model.</p>
+  {% endif %}
+</div>
+
+<h2>Recent predictions</h2>
+{% if recent_predictions %}
+<table>
+  <tr><th>ma_ket_qua</th><th>ma_benh_nhan</th><th>muc_nguy_co_tong</th><th>thoi_gian_du_doan</th></tr>
+  {% for rec in recent_predictions %}
+    <tr>
+      <td><a href="/predictions/{{ rec.ma_ket_qua }}/">{{ rec.ma_ket_qua }}</a></td>
+      <td>{{ rec.ma_benh_nhan }}</td>
+      <td>{{ rec.muc_nguy_co_tong }}</td>
+      <td>{{ rec.thoi_gian_du_doan }}</td>
+    </tr>
+  {% endfor %}
+</table>
+{% else %}
+<p>Chưa có dữ liệu dự đoán.</p>
+{% endif %}
+{% endblock %}

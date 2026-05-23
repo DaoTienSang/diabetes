@@ -1,0 +1,24 @@
+{% extends "app/base.html" %}
+{% block content %}
+<h1>Danh sách bệnh nhân</h1>
+<form method="get">
+  <input name="q" value="{{ q }}" placeholder="Tìm mã bệnh nhân hoặc tên">
+  <button type="submit">Tìm kiếm</button>
+</form>
+{% if patients %}
+<table>
+  <tr><th>ma_benh_nhan</th><th>ten</th><th>tuoi</th><th>gioi_tinh</th><th>chi tiết</th></tr>
+  {% for p in patients %}
+    <tr>
+      <td>{{ p.ma_benh_nhan }}</td>
+      <td>{{ p.ten }}</td>
+      <td>{{ p.tuoi }}</td>
+      <td>{{ p.gioi_tinh }}</td>
+      <td><a href="/patients/{{ p.ma_benh_nhan }}/">Xem chi tiết</a></td>
+    </tr>
+  {% endfor %}
+</table>
+{% else %}
+<p>Chưa có dữ liệu bệnh nhân.</p>
+{% endif %}
+{% endblock %}
